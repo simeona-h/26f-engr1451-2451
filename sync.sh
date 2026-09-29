@@ -14,6 +14,39 @@ set -euo pipefail
 REPO="$HOME/26f-engr1451-2451"
 WORK_BRANCH="student-work"
 
+# Ignore common local metadata and temporary files in this clone.
+# These rules are local (.git/info/exclude) and are not committed.
+configure_local_excludes() {
+    local exclude_file=".git/info/exclude"
+    local marker="# BEGIN ENGR1451 LOCAL EXCLUDES"
+
+    if ! grep -Fq "$marker" "$exclude_file"; then
+        cat >> "$exclude_file" <<'EOF'
+
+# BEGIN ENGR1451 LOCAL EXCLUDES
+# macOS metadata
+.DS_Store
+._*
+
+# Jupyter / Python temporary files
+.ipynb_checkpoints/
+__pycache__/
+*.py[cod]
+
+# Editor / application temporary files
+*~
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+~$*
+# END ENGR1451 LOCAL EXCLUDES
+EOF
+    fi
+}
+
+
 if [[ ! -d "$REPO/.git" ]]; then
     echo "ERROR: Repository not found at:"
     echo "  $REPO"
@@ -22,6 +55,8 @@ if [[ ! -d "$REPO/.git" ]]; then
 fi
 
 cd "$REPO"
+
+configure_local_excludes
 
 if [[ -n "$(git status --porcelain)" ]]; then
     echo "ERROR: You have unsaved changes:"
